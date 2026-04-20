@@ -51,11 +51,12 @@ We are using the **Student Mental Health and Burnout Dataset** from Kaggle.
 
 ### 🔹 Models (Built from Scratch)
 
+* Linear Regression for experimentation
 * Logistic Regression
+* Random Forests
 * K-Nearest Neighbors (KNN)
 * Decision Tree
 * Naive Bayes
-* (Optional) Linear Regression for experimentation
 
 ---
 
