@@ -1,3 +1,4 @@
+from gui_utils import get_project_root
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -9,10 +10,10 @@ st.title("Detailed Metrics")
 
 # Load data
 try:
-    comparison_df = pd.read_csv('../results/comparison.csv')
-    with open('../results/built_in_results.json', 'r') as f:
+    comparison_df = pd.read_csv(os.path.join(get_project_root(), 'results', 'comparison.csv'))
+    with open(os.path.join(get_project_root(), 'results', 'built_in_results.json'), 'r') as f:
         built_in_results = json.load(f)
-    with open('../results/from_scratch_results.json', 'r') as f:
+    with open(os.path.join(get_project_root(), 'results', 'from_scratch_results.json'), 'r') as f:
         scratch_results = json.load(f)
 except:
     comparison_df = pd.read_csv('results/comparison.csv')

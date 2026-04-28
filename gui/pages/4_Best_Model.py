@@ -1,3 +1,4 @@
+from gui_utils import get_project_root
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -25,7 +26,7 @@ col1, col2 = st.columns(2)
 with col1:
     st.subheader("🎯 Top 3 Models Comparison")
     try:
-        comparison_df = pd.read_csv('../results/comparison.csv')
+        comparison_df = pd.read_csv(os.path.join(get_project_root(), 'results', 'comparison.csv'))
     except:
         comparison_df = pd.read_csv('results/comparison.csv')
 

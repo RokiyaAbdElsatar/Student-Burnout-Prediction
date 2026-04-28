@@ -1,3 +1,4 @@
+from gui_utils import get_project_root
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -6,7 +7,7 @@ st.title("Model Comparison: Built-in vs From Scratch")
 
 # Load data
 try:
-    comparison_df = pd.read_csv('../results/comparison.csv')
+    comparison_df = pd.read_csv(os.path.join(get_project_root(), 'results', 'comparison.csv'))
 except:
     comparison_df = pd.read_csv('results/comparison.csv')
 

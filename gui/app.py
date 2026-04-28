@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 
-# Add utils to path
+# Add utils to path and import project root
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from gui_utils import (
     load_comparison_data,
@@ -14,7 +14,8 @@ from gui_utils import (
     load_markdown_file,
     load_dataset_sample,
     load_aggregated_data,
-    get_best_model
+    get_best_model,
+    PROJECT_ROOT
 )
 
 # Constants
@@ -589,8 +590,8 @@ elif page == "🔄 Retrain Models":
             status_text.text("Running main.py...")
             import subprocess
             result = subprocess.run(
-                [sys.executable, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'main.py')],
-                capture_output=True, text=True, cwd=os.path.dirname(os.path.dirname(__file__))
+                [sys.executable, os.path.join(PROJECT_ROOT, 'main.py')],
+                capture_output=True, text=True, cwd=PROJECT_ROOT
             )
             progress_bar.progress(100)
             if result.returncode == 0:

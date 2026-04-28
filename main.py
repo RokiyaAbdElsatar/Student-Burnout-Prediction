@@ -2,7 +2,9 @@ import sys
 import json
 import os
 
-sys.path.append('.')
+# Get project root (directory containing this file)
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, PROJECT_ROOT)
 
 from utils.data_loader import load_raw_data, aggregate_per_person, split_data, normalize, encode_labels
 from utils.metrics import accuracy, precision, recall, f1_score, print_metrics
@@ -13,7 +15,7 @@ NUM_CLASSES = 8
 def load_and_preprocess():
     """Load and preprocess data. Returns X_train, X_test, y_train, y_test."""
     print("Loading data...")
-    header, rows = load_raw_data('dataset/pain_dataset_200P_4hz.csv')
+    header, rows = load_raw_data(os.path.join(PROJECT_ROOT, 'dataset', 'pain_dataset_200P_4hz.csv'))
     X, y = aggregate_per_person(rows)
     y = encode_labels(y)
     X_train, X_test, y_train, y_test = split_data(X, y)
@@ -236,13 +238,15 @@ def run_scratch_models(X_train, X_test, y_train, y_test):
 
 def save_results(builtin_results, scratch_results):
     """Save results to JSON files."""
-    os.makedirs('results', exist_ok=True)
-    with open('results/built_in_results.json', 'w') as f:
+    import os
+    results_dir = os.path.join(PROJECT_ROOT, 'results')
+    os.makedirs(results_dir, exist_ok=True)
+    with open(os.path.join(results_dir, 'built_in_results.json'), 'w') as f:
         json.dump(builtin_results, f, indent=2)
-    with open('results/from_scratch_results.json', 'w') as f:
+    with open(os.path.join(results_dir, 'from_scratch_results.json'), 'w') as f:
         json.dump(scratch_results, f, indent=2)
     print("\n" + "="*60)
-    print("Results saved to results/")
+    print(f"Results saved to {results_dir}/")
     print("="*60)
 
 

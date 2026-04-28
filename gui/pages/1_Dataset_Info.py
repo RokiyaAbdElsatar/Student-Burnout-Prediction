@@ -1,3 +1,4 @@
+from gui_utils import get_project_root
 import streamlit as st
 import pandas as pd
 import plotly.express as px

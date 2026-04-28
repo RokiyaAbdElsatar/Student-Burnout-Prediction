@@ -1,3 +1,4 @@
+from gui_utils import get_project_root
 import streamlit as st
 import pandas as pd
 import datetime
@@ -38,7 +39,7 @@ with col3:
 if st.button("📥 Generate Report", type="primary"):
     with st.spinner("Generating report..."):
         try:
-            comparison_df = pd.read_csv('../results/comparison.csv')
+            comparison_df = pd.read_csv(os.path.join(get_project_root(), 'results', 'comparison.csv'))
         except:
             comparison_df = pd.read_csv('results/comparison.csv')
 

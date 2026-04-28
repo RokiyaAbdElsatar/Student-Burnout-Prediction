@@ -1,3 +1,4 @@
+from gui_utils import get_project_root
 import streamlit as st
 import subprocess
 import time
@@ -70,7 +71,7 @@ st.subheader("📈 Current Results (Interactive)")
 
 try:
     try:
-        comparison_df = pd.read_csv('../results/comparison.csv')
+        comparison_df = pd.read_csv(os.path.join(get_project_root(), 'results', 'comparison.csv'))
     except:
         comparison_df = pd.read_csv('results/comparison.csv')
 
