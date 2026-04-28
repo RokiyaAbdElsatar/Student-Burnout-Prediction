@@ -1,103 +1,131 @@
 # Student Burnout Prediction
 
-## Dataset
+A machine learning project that predicts student burnout using physiological sensor data. Implements 6 algorithms from scratch and compares them with built-in libraries.
 
-**Source:** Pain Dataset (Kaggle) - `pain_dataset_200P_4hz.csv`
+## Quick Start
 
-**Description:** Physiological time-series data from 200 persons with sensor measurements.
-
-**Target Variable:**
-- `pain_scale` → 1 to 8 (multi-class classification, 8 classes)
-
-**Features (7 sensor measurements per person):**
-- `acc_x, acc_y, acc_z` - Accelerometer readings
-- `eda` - Electrodermal activity
-- `bvp` - Blood volume pulse
-- `hr` - Heart rate
-- `temp` - Temperature
-
-**Preprocessing:** Data aggregated per person (mean, std, min, max for each sensor) → 28 features per person.
-
-## Algorithms
-
-- Decision Tree
-- Random Forest
-- Linear Regression
-- Logistic Regression
-- K-Nearest Neighbors (KNN)
-- Naive Bayes
-
-## Supporting Files
-
-### `utils/data_loader.py` - Handles data loading and preprocessing
-- `load_raw_data(filepath)` - Load CSV data and return header and rows
-- `aggregate_per_person(raw_data)` - Aggregate time-series data per person (mean, std, min, max for each sensor)
-- `split_data(X, y, test_size=0.2)` - Split data into train and test sets
-- `normalize(X_train, X_test)` - Apply z-score normalization using training statistics
-- `encode_labels(y)` - Encode pain_scale (1-8) to 0-indexed labels
-
-### `utils/metrics.py` - Implements evaluation metrics
-- `accuracy(y_true, y_pred)` - Calculate accuracy
-- `confusion_matrix(y_true, y_pred, num_classes)` - Generate confusion matrix
-- `precision(y_true, y_pred, num_classes)` - Calculate per-class and macro-average precision
-- `recall(y_true, y_pred, num_classes)` - Calculate per-class and macro-average recall
-- `f1_score(prec, rec)` - Calculate F1 score from precision and recall
-- `print_metrics(y_true, y_pred, num_classes)` - Print all metrics in a formatted table
-
-## Results
-
-### Best Model: Logistic Regression (From Scratch)
-- **Macro F1-Score**: 0.4042
-- **Accuracy**: 0.4250
-- **Macro Precision**: 0.4062
-- **Macro Recall**: 0.4021
-
-### Comparison Table: Built-in vs From Scratch
-
-| Model | Type | Accuracy | Macro Precision | Macro Recall | Macro F1 |
-|-------|------|----------|----------------|--------------|----------|
-| Decision Tree | Built-in | 0.4250 | 0.4007 | 0.3979 | 0.3993 |
-| Decision Tree | From Scratch | 0.3250 | 0.3219 | 0.2625 | 0.2892 |
-| Random Forest | Built-in | 0.4250 | 0.3006 | 0.3396 | 0.3189 |
-| Random Forest | From Scratch | 0.4250 | 0.3329 | 0.3688 | 0.3499 |
-| Linear Regression | Both | 0.4500 | 0.2923 | 0.3750 | 0.3285 |
-| Logistic Regression | Built-in | 0.4250 | 0.3482 | 0.3875 | 0.3668 |
-| **Logistic Regression** | **From Scratch** | **0.4250** | **0.4062** | **0.4021** | **0.4042** |
-| KNN | Built-in | 0.2000 | 0.1531 | 0.1833 | 0.1669 |
-| KNN | From Scratch | 0.1750 | 0.1442 | 0.1500 | 0.1471 |
-| Naive Bayes | Built-in | 0.3750 | 0.3042 | 0.3500 | 0.3255 |
-| Naive Bayes | From Scratch | 0.3750 | 0.3069 | 0.3500 | 0.3271 |
-
-### Why Logistic Regression (From Scratch) Performed Best
-
-1. **Probabilistic Nature**: Softmax activation provides well-calibrated probabilities for 8-class classification
-2. **Gradient Descent Optimization**: 1000 epochs with lr=0.01 converged well for 160 training samples
-3. **No Overfitting**: Simple model with 28 features and 160 samples
-4. **Linear Relationships**: Aggregated sensor features (mean, std, min, max) have approximately linear relationships with pain_scale
-
-### Worst Performance: KNN
-- High dimensionality (28 features) dilutes distance metric
-- Small dataset (160 training samples after aggregation)
-- Sensor noise affects distance calculations
-
-For detailed analysis, see `results/best_model_analysis.md`.
-
-## How to Contribute
-
-1. Create a new branch named after the algorithm (e.g., `decision-tree`, `knn`).
-2. Apply the algorithm code in your branch.
-3. Create a pull request to merge your changes.
-
-## How to Run
+### Option 1: Run GUI (Recommended)
 
 ```bash
+# Clone the repository
+git clone https://github.com/RokiyaAbdElsatar/Student-Burnout-Prediction.git
+cd Student-Burnout-Prediction
+
 # Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install streamlit scikit-learn numpy pandas plotly
+
+# Launch the modern GUI with interactive charts
+streamlit run gui/app.py
+```
+
+Or use the convenience script:
+
+```bash
+./start_gui.sh
+```
+
+### Option 2: Run Models from Command Line
+
+```bash
+# Setup (if not done already)
 python3 -m venv venv
 source venv/bin/activate
 pip install scikit-learn numpy
 
-# Run all models
+# Run all 12 models (6 built-in + 6 from scratch)
 python main.py
 ```
 
 Results will be saved to `results/` directory.
+
+## GUI Features
+
+The modern GUI includes:
+
+- **Dashboard**: Interactive charts showing model performance, dataset distribution, and metrics
+- **Dataset Info**: Visualizations of sensor data and class distribution
+- **Model Comparison**: Interactive charts comparing built-in vs from-scratch implementations
+- **Metrics Detail**: Radar charts and heatmaps for each model
+- **Best Model Analysis**: Performance breakdowns and why it won
+- **Retrain Models**: One-click retraining with progress tracking
+- **Export Report**: Download HTML reports with embedded interactive charts
+
+## Project Structure
+
+```
+Student-Burnout-Prediction/
+├── dataset/                    # Dataset files
+│   └── pain_dataset_200P_4hz.csv
+├── gui/                        # Modern Streamlit GUI
+│   ├── app.py                 # Main application with Plotly charts
+│   ├── pages/                 # GUI pages
+│   └── utils/                 # GUI utilities
+├── models/                     # ML models from scratch
+│   ├── decision_tree.py
+│   ├── random_forest.py
+│   ├── linear_regression.py
+│   ├── logistic_regression.py
+│   ├── knn.py
+│   └── naive_bayes.py
+├── utils/                      # Data processing utilities
+│   ├── data_loader.py
+│   └── metrics.py
+├── results/                    # Output files
+├── main.py                     # Run all models
+├── start_gui.sh               # GUI startup script
+└── README.md
+```
+
+## Requirements
+
+- Python 3.7+
+- streamlit
+- scikit-learn
+- numpy
+- pandas
+- plotly
+
+## Models Implemented
+
+| Model | Built-in | From Scratch |
+|-------|----------|--------------|
+| Decision Tree | ✅ | ✅ |
+| Random Forest | ✅ | ✅ |
+| Linear Regression | ✅ | ✅ |
+| Logistic Regression | ✅ | ✅ |
+| K-Nearest Neighbors | ✅ | ✅ |
+| Naive Bayes | ✅ | ✅ |
+
+## Results Summary
+
+**Best Model**: Logistic Regression (From Scratch)
+- Macro F1-Score: **0.4042**
+- Accuracy: **0.4250**
+- Macro Precision: **0.4062**
+- Macro Recall: **0.4021**
+
+View full results in the GUI or check `results/` directory.
+
+## Dataset
+
+**Source**: Pain Dataset (Kaggle) - `pain_dataset_200P_4hz.csv`
+
+- **Target**: `pain_scale` (1-8, 8 classes)
+- **Features**: 7 sensor measurements (acc_x, acc_y, acc_z, eda, bvp, hr, temp)
+- **Preprocessing**: 28 features per person (mean, std, min, max for each sensor)
+- **Samples**: ~200 persons, aggregated to ~160 training samples
+
+## Contributing
+
+1. Create a branch: `git checkout -b feature-name`
+2. Make changes and commit: `git commit -m "Description"`
+3. Push to branch: `git push origin feature-name`
+4. Create a Pull Request
+
+## License
+
+This project is open source.
