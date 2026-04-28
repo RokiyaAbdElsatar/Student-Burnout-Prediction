@@ -3,7 +3,16 @@ import pandas as pd
 import sys
 import os
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+# Add utils to path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+from gui_utils import (
+    load_comparison_data,
+    load_results_json,
+    load_markdown_file,
+    load_dataset_sample,
+    load_aggregated_data,
+    get_best_model
+)
 
 st.set_page_config(
     page_title="Student Burnout Prediction",
@@ -30,14 +39,12 @@ page = st.sidebar.radio(
 st.sidebar.markdown("---")
 st.sidebar.markdown("🌙 **Dark Mode Active**")
 
+# Load data
 @st.cache_data
 def load_data():
-    comparison = pd.read_csv('../results/comparison.csv')
-    import json
-    with open('../results/built_in_results.json', 'r') as f:
-        built_in = json.load(f)
-    with open('../results/from_scratch_results.json', 'r') as f:
-        scratch = json.load(f)
+    comparison = load_comparison_data()
+    built_in = load_results_json('built_in')
+    scratch = load_results_json('from_scratch')
     return comparison, built_in, scratch
 
 try:
@@ -51,8 +58,11 @@ if page == "🏠 Home":
     st.markdown("---")
     col1, col2 = st.columns([2, 1])
     with col1:
-        with open('../README.md', 'r') as f:
-            st.markdown(f.read())
+        try:
+            readme = load_markdown_file('README.md')
+            st.markdown(readme)
+        except Exception as e:
+            st.error(f"Error loading README: {e}")
     with col2:
         st.subheader("🏆 Quick Stats")
         st.metric("Best Model", "Logistic Regression (Scratch)")
@@ -68,32 +78,35 @@ elif page == "📊 Dataset Info":
     **Description:** Physiological time-series data from 200 persons.
     **Target:** `pain_scale` → 1 to 8 (8 classes)
     **Features:** acc_x, acc_y, acc_z, eda, bvp, hr, temp (7 sensors)
+    **Preprocessing:** 28 features per person (mean, std, min, max)
     """)
 
     st.subheader("Raw Data Sample (First 10 rows)")
-    raw_df = pd.read_csv('../dataset/pain_dataset_200P_4hz.csv', nrows=10)
-    st.dataframe(raw_df, use_container_width=True)
+    try:
+        raw_df = load_dataset_sample(nrows=10)
+        st.dataframe(raw_df, use_container_width=True)
+    except Exception as e:
+        st.error(f"Error loading dataset: {e}")
 
     st.subheader("Aggregated Data Sample (5 persons)")
     st.markdown("28 features per person (mean, std, min, max for each sensor)")
-    import sys
-    sys.path.append('..')
-    from utils.data_loader import load_raw_data, aggregate_per_person, encode_labels
-    header, rows = load_raw_data('../dataset/pain_dataset_200P_4hz.csv')
-    X, y = aggregate_per_person(rows)
-    agg_df = pd.DataFrame(X, columns=[f'feature_{i}' for i in range(len(X[0]))])
-    agg_df['pain_scale'] = y
-    st.dataframe(agg_df.head(), use_container_width=True)
+    try:
+        X, y = load_aggregated_data()
+        agg_df = pd.DataFrame(X, columns=[f'feature_{i}' for i in range(len(X[0]))])
+        agg_df['pain_scale'] = y
+        st.dataframe(agg_df.head(), use_container_width=True)
 
-    st.subheader("Class Distribution (pain_scale)")
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots(figsize=(10, 5))
-    class_counts = pd.Series(y).value_counts().sort_index()
-    ax.bar(class_counts.index, class_counts.values, color='skyblue', edgecolor='navy')
-    ax.set_xlabel('Pain Scale (1-8)')
-    ax.set_ylabel('Count')
-    ax.set_title('Class Distribution')
-    st.pyplot(fig)
+        st.subheader("Class Distribution (pain_scale)")
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(10, 5))
+        class_counts = pd.Series(y).value_counts().sort_index()
+        ax.bar(class_counts.index, class_counts.values, color='skyblue', edgecolor='navy')
+        ax.set_xlabel('Pain Scale (1-8)')
+        ax.set_ylabel('Count')
+        ax.set_title('Class Distribution')
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error processing data: {e}")
 
 elif page == "🤖 Model Comparison":
     st.title("🤖 Model Comparison: Built-in vs From Scratch")
@@ -220,12 +233,17 @@ elif page == "🏆 Best Model":
         st.metric("Macro Recall", "0.4021")
     with col4:
         st.metric("Macro F1", "0.4042", "Best!")
-    with open('../results/best_model_analysis.md', 'r') as f:
-        st.markdown(f.read())
+
+    try:
+        analysis = load_markdown_file('results/best_model_analysis.md')
+        st.markdown(analysis)
+    except Exception as e:
+        st.error(f"Error loading analysis: {e}")
 
 elif page == "🔄 Retrain Models":
     st.title("🔄 Model Retraining")
     st.markdown("Click the button below to retrain all 12 models (6 Built-in + 6 From Scratch).")
+
     if st.button("🚀 Start Retraining", type="primary"):
         with st.spinner("Training in progress... This may take a few minutes..."):
             progress_bar = st.progress(0)
@@ -238,15 +256,15 @@ elif page == "🔄 Retrain Models":
             status_text.text("Running main.py...")
             import subprocess
             result = subprocess.run(
-                ["../venv/bin/python", "main.py"],
+                [sys.executable, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'main.py')],
                 capture_output=True,
                 text=True,
-                cwd='..'
+                cwd=os.path.dirname(os.path.dirname(__file__))
             )
             progress_bar.progress(100)
             if result.returncode == 0:
                 st.success("✅ Retraining Complete!")
-                with st.expander("View Output"):
+                with st.expander("View Training Output"):
                     st.code(result.stdout)
             else:
                 st.error("❌ Retraining Failed")
@@ -272,10 +290,19 @@ elif page == "🔄 Retrain Models":
 elif page == "📄 Export Report":
     st.title("📄 Export Report")
     st.markdown("Generate a comprehensive HTML report with all results and analysis.")
+
     if st.button("📥 Generate HTML Report", type="primary"):
         with st.spinner("Generating report..."):
             import datetime
             now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            comparison_df = load_comparison_data()
+            try:
+                analysis = load_markdown_file('results/best_model_analysis.md')
+                readme = load_markdown_file('README.md')
+            except:
+                analysis = "Analysis not found."
+                readme = "README not found."
+
             html = f"""<!DOCTYPE html>
 <html><head><title>Student Burnout Prediction - Full Report</title>
 <style>
@@ -284,9 +311,9 @@ h1,h2,h3{{color:#FAFAFA;border-bottom:2px solid #262730;padding-bottom:10px}}
 table{{border-collapse:collapse;width:100%;margin:20px 0;color:#FAFAFA}}
 th,td{{border:1px solid #555;padding:12px;text-align:left}}
 th{{background-color:#262730;color:#FAFAFA;font-weight:bold}}
-tr:nth-child(even){{background-color:#1a1a2e}}tr:hover{{background-color:#2a2a4e}}
+tr:nth-child(even){{background-color:#1a1a2e}}
 .metric{{display:inline-block;margin:20px;padding:20px 40px;background:#262730;border-radius:10px;border:2px solid #FF4B4B;min-width:150px}}
-.metric h3{{margin:0;color:#FF4B4B;font-size:14px;text-transform:uppercase}}
+.metric h3{{margin:0;color:#FF4B4B;font-size:14px}}
 .metric p{{font-size:32px;margin:10px 0 0 0;font-weight:bold;color:#FAFAFA}}
 .best-model{{background:#1a472a;border-color:#90EE90;padding:30px;border-radius:15px;margin:20px 0}}
 pre{{background:#262730;padding:20px;border-radius:5px;overflow-x:auto;white-space:pre-wrap}}
@@ -305,10 +332,9 @@ pre{{background:#262730;padding:20px;border-radius:5px;overflow-x:auto;white-spa
 <li>Probabilistic nature with softmax suited for 8-class classification</li>
 <li>KNN performed worst (Macro F1: 0.1471) due to high dimensionality</li>
 <li>From-scratch implementations were competitive with built-in libraries</li></ul>
-<h2>Detailed Analysis</h2><pre>"""
-            with open('../results/best_model_analysis.md', 'r') as f:
-                html += f.read()
-            html += "</pre><div class='footer'><p>Report generated by Student Burnout Prediction GUI</p></div></body></html>"
+<h2>Detailed Analysis</h2><pre>{analysis}</pre>
+<h2>Project README</h2><pre>{readme}</pre>
+<div class="footer"><p>Report generated by Student Burnout Prediction GUI</p></div></body></html>"""
 
             st.download_button(
                 label="💾 Download HTML Report",
@@ -327,6 +353,7 @@ pre{{background:#262730;padding:20px;border-radius:5px;overflow-x:auto;white-spa
     - 📊 Dataset Information summary
     - 📈 Key Findings and analysis
     - 📋 Detailed Analysis from best_model_analysis.md
+    - 📚 Full README content
     - 🎨 Dark mode styling (matches GUI theme)
     - 📥 Single HTML file, opens in any browser
     """)
