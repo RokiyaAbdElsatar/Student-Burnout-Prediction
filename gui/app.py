@@ -296,31 +296,45 @@ elif page == "🤖 Model Comparison":
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Macro F1 Comparison")
-        fig, ax = plt.subplots(figsize=(10, 8))
-        models = comparison_df['Model'] + '\n(' + comparison_df['Type'] + ')'
-        colors = [COLORS['built_in'] if t == 'Built-in' else COLORS['scratch'] for t in comparison_df['Type']]
-        bars = ax.barh(range(len(models)), comparison_df['Macro F1'], color=colors)
-        ax.set_yticks(range(len(models)))
-        ax.set_yticklabels(models, fontsize=8)
-        ax.set_xlabel('Macro F1 Score')
-        ax.set_title('Macro F1: Built-in (Red) vs Scratch (Blue)')
-        best_idx = comparison_df['Macro F1'].idxmax()
-        bars[best_idx].set_edgecolor('lime')
-        bars[best_idx].set_linewidth(3)
-        st.pyplot(fig)
+        fig = create_metrics_bar_chart(comparison_df, 'Model', 'Macro F1',
+                                       'Macro F1: Built-in vs Scratch', height=500)
+        # Highlight best model
+        fig.add_trace(go.Bar(x=[comparison_df.loc[comparison_df['Macro F1'].idxmax(), 'Model']],
+                              y=[comparison_df['Macro F1'].max()],
+                              marker_color='lime', opacity=0.8, showlegend=False))
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         st.subheader("Accuracy Comparison")
-        fig, ax = plt.subplots(figsize=(10, 8))
-        bars = ax.barh(range(len(models)), comparison_df['Accuracy'], color=colors)
-        ax.set_yticks(range(len(models)))
-        ax.set_yticklabels(models, fontsize=8)
-        ax.set_xlabel('Accuracy')
-        ax.set_title('Accuracy: Built-in (Red) vs Scratch (Blue)')
-        best_idx = comparison_df['Accuracy'].idxmax()
-        bars[best_idx].set_edgecolor('lime')
-        bars[best_idx].set_linewidth(3)
-        st.pyplot(fig)
+        fig2 = create_metrics_bar_chart(comparison_df, 'Model', 'Accuracy',
+                                        'Accuracy: Built-in vs Scratch', height=500)
+        st.plotly_chart(fig2, use_container_width=True)
+
+    # Interactive Grouped Bar Chart
+    st.subheader("📊 Performance Comparison (Interactive)")
+    fig3 = px.bar(
+        comparison_df,
+        x='Model',
+        y=['Macro F1', 'Accuracy', 'Macro Precision', 'Macro Recall'],
+        color='Type',
+        barmode='group',
+        title='All Metrics by Model & Type',
+        color_discrete_map={'Built-in': COLORS['built_in'], 'From Scratch': COLORS['scratch']}
+    )
+    fig3 = apply_dark_theme(fig3, 500)
+    st.plotly_chart(fig3, use_container_width=True)
+
+    # Parallel Coordinates Plot
+    st.subheader("🎯 Parallel Coordinates Plot")
+    fig4 = px.parallel_coordinates(
+        comparison_df,
+        dimensions=['Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1'],
+        color='Macro F1',
+        color_continuous_scale='Viridis',
+        title='Model Performance Across All Metrics'
+    )
+    fig4 = apply_dark_theme(fig4, 500)
+    st.plotly_chart(fig4, use_container_width=True)
 
     st.subheader("Summary Statistics")
     col1, col2, col3, col4 = st.columns(4)
