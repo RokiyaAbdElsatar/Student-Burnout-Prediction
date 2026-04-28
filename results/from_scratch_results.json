@@ -1,0 +1,38 @@
+{
+  "Decision Tree": {
+    "Accuracy": 0.325,
+    "Macro Precision": 0.321875,
+    "Macro Recall": 0.2625,
+    "Macro F1": 0.2891711229946524
+  },
+  "Random Forest": {
+    "Accuracy": 0.425,
+    "Macro Precision": 0.33288690476190474,
+    "Macro Recall": 0.36875,
+    "Macro F1": 0.3499019088016967
+  },
+  "Linear Regression": {
+    "Accuracy": 0.45,
+    "Macro Precision": 0.29230769230769227,
+    "Macro Recall": 0.375,
+    "Macro F1": 0.3285302593659942
+  },
+  "Logistic Regression": {
+    "Accuracy": 0.425,
+    "Macro Precision": 0.40625,
+    "Macro Recall": 0.40208333333333335,
+    "Macro F1": 0.40415592783505155
+  },
+  "KNN": {
+    "Accuracy": 0.175,
+    "Macro Precision": 0.14423076923076922,
+    "Macro Recall": 0.15,
+    "Macro F1": 0.14705882352941177
+  },
+  "Naive Bayes": {
+    "Accuracy": 0.375,
+    "Macro Precision": 0.30694444444444446,
+    "Macro Recall": 0.35,
+    "Macro F1": 0.32706131078224104
+  }
+}
